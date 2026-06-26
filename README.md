@@ -432,3 +432,122 @@ GET /api/export.csv
 5. 增加课堂实验数据分析面板；
 6. 支持学生人工反诘与修改记录；
 7. 后续根据 Wisepen 平台接口情况决定是否接入 Wisepen。
+
+## 第一版 Demo 快速开始
+
+### 安装依赖
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 配置 API Key
+
+```bash
+cp .env.example .env
+```
+
+在 `.env` 中填写：
+
+```env
+DEEPSEEK_API_KEY=你的 DeepSeek Key
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
+TAVILY_API_KEY=你的 Tavily Key
+DEMO_MODE=false
+```
+
+如果 `DEMO_MODE=true`，或未配置 API Key，系统会自动使用 mock LLM、mock 搜索结果和 mock 网页正文，保证课堂演示可跑通。
+
+### 启动 Gradio Demo
+
+```bash
+python app.py
+```
+
+### 启动 FastAPI
+
+```bash
+uvicorn main:app --reload
+```
+
+API 入口：
+
+* `GET /health`
+* `POST /api/fact-check`
+* `GET /api/sessions`
+* `GET /api/sessions/{session_id}`
+* `POST /api/sessions/{session_id}/human-override`
+* `GET /api/export.csv`
+
+### 运行测试
+
+```bash
+pytest
+```
+
+## 示例输入
+
+```text
+网传某地因为食品安全问题关闭了所有中小学食堂。
+```
+
+## 示例输出摘要
+
+系统会拆解事实主张，生成官方来源、主流媒体、反证、时间线、原始出处等搜索任务，读取网页证据，生成 Evidence Cards，并输出 Markdown 核查报告。报告包含可靠性等级、评分、支持证据、反驳证据、不确定点、source URL 和人工最终裁决区域。
+
+## 当前局限
+
+* Demo 模式使用固定 mock 数据，不能代表真实世界检索结果。
+* 真实联网模式依赖 DeepSeek 与 Tavily API 的可用性、额度和网络状态。
+* 网页正文提取可能受反爬、登录墙、动态渲染页面影响。
+* V1 评分规则是教学用启发式规则，后续应结合更多课堂样本校准权重。
+* 当前 Gradio 实时过程为轻量实现，后续可升级 SSE/WebSocket。
+
+## 下一步升级方向
+
+* 增加可配置 Prompt 模板和多语言检索策略。
+* 增加来源白名单、域名信誉库和事实核查机构数据库。
+* 引入异步并发搜索/网页读取和去重聚类。
+* 为 FastAPI 增加 SSE/WebSocket 流式 trace。
+* 增加课堂标注界面、评分校准工具和更完整的数据导出。
+
+## 自查与验收命令
+
+建议在全新虚拟环境中执行：
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+python app.py
+```
+
+另开终端启动 API：
+
+```bash
+source .venv/bin/activate
+uvicorn main:app --reload
+```
+
+常用验收请求：
+
+```bash
+curl http://127.0.0.1:8000/health
+curl -X POST http://127.0.0.1:8000/api/fact-check \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"网传某地因为食品安全问题关闭了所有中小学食堂。","demo_mode":true}'
+curl http://127.0.0.1:8000/api/sessions
+curl http://127.0.0.1:8000/api/export.csv
+```
+
+运行自动化测试：
+
+```bash
+pytest
+```
+
+如果在受限网络环境中无法访问 PyPI，请在可联网环境中先完成 `pip install -r requirements.txt`；Demo 模式本身不需要 DeepSeek 或 Tavily API Key。
