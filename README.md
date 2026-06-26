@@ -1,10 +1,10 @@
-# 重明鸟 Chongmingniao Agent
+# 重明鸟事实核查智能体 ChongmingBird Agent
 
-面向新闻事实核查教学场景的联网事实核查智能体 Demo。
+重明鸟事实核查智能体：面向新闻事实核查教学场景的联网事实核查智能体。
 
 ## 项目简介
 
-“重明鸟”是一个用于新闻学院《事实与事实核查》课程的实验型智能体系统。它的目标不是训练一个新的大语言模型，而是基于现有大模型 API 搭建一个可解释、可追踪、可用于课堂实验的人机协同事实核查 Agent。
+**重明鸟事实核查智能体**，是一个由复旦大学新闻学院的本科生李文博同学和大连理工大学未来技术学院的本科生曾子业合作创建的实验型智能体系统。我们的目标不是训练一个新的大语言模型，而是基于现有大模型 API 搭建一个可解释、可追踪、可用于课堂实验的人机协同事实核查 Agent。
 
 用户输入一段待核查消息后，系统会自动完成以下流程：
 
@@ -224,7 +224,7 @@ pytest
 ## 计划目录结构
 
 ```text
-chongmingniao-agent/
+chongmingbird-agent/
   README.md
   requirements.txt
   .env.example
@@ -274,7 +274,7 @@ DEEPSEEK_MODEL=deepseek-chat
 
 TAVILY_API_KEY=
 
-DATABASE_URL=sqlite:///./data/chongmingniao.db
+DATABASE_URL=sqlite:///./data/chongmingbird.db
 
 DEMO_MODE=true
 ```
