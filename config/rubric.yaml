@@ -1,0 +1,8 @@
+weights:
+  source_authority: 0.20
+  evidence_directness: 0.20
+  multi_source_consistency: 0.20
+  temporal_context_consistency: 0.15
+  counter_evidence_strength: 0.15
+  traceability: 0.10
+insufficient_evidence_min_cards: 1
