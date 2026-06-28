@@ -1,0 +1,11 @@
+fastapi>=0.111
+uvicorn[standard]>=0.30
+gradio>=4.44
+pydantic>=2.7
+pydantic-settings>=2.2
+python-dotenv>=1.0
+requests>=2.32
+trafilatura>=1.9
+beautifulsoup4>=4.12
+PyYAML>=6.0
+pytest>=8.2

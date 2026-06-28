@@ -22,7 +22,7 @@
 
 ## 项目目标
 
-第一版 Demo 需要实现一个类似 Codex 工作方式的事实核查 Agent：
+v0.3 演示原型实现一个类似 Codex 工作方式的事实核查 Agent：
 
 ```text
 用户输入待核查消息
@@ -86,7 +86,7 @@
 * 搜索关键词；
 * 搜索目的。
 
-第一版 Demo 默认支持 mock/offline 模式，方便在没有 API Key 的情况下演示。
+v0.3 演示原型默认支持 mock/offline 模式，方便在没有 API Key 的情况下演示。
 
 ### 4. 网页读取
 
@@ -124,7 +124,7 @@ irrelevant           无关
 
 ### 6. 可靠性评分
 
-第一版采用 V1 可靠性评价尺度：
+v0.3 演示原型采用 V1 可靠性评价尺度：
 
 | 维度       |  权重 | 含义                       |
 | -------- | --: | ------------------------ |
@@ -197,7 +197,7 @@ irrelevant           无关
 
 ## 推荐技术栈
 
-第一版 Demo 计划使用：
+v0.3 演示原型使用：
 
 ```text
 Python 3.10+
@@ -215,7 +215,7 @@ pytest
 其中：
 
 * DeepSeek API 作为 Agent 大脑；
-* Tavily API 作为联网搜索工具；
+* Tavily API 作为联网搜索工具，真实模式使用 `Authorization: Bearer ${TAVILY_API_KEY}` header；
 * FastAPI 作为后端；
 * Gradio 作为演示前端；
 * SQLite 保存课堂实验日志；
@@ -270,7 +270,7 @@ chongmingbird-agent/
 ```env
 DEEPSEEK_API_KEY=
 DEEPSEEK_BASE_URL=https://api.deepseek.com
-DEEPSEEK_MODEL=deepseek-chat
+DEEPSEEK_MODEL=deepseek-v4-flash
 
 TAVILY_API_KEY=
 
@@ -400,9 +400,9 @@ GET /api/export.csv
 9. AI 只提供辅助判断，人类保留最终裁决权。
 10. 所有流程都要可解释、可复盘、可教学使用。
 
-## 第一版 Demo 验收标准
+## v0.3 演示原型验收标准
 
-第一版 Demo 至少需要跑通以下流程：
+v0.3 演示原型至少需要跑通以下流程：
 
 1. 用户启动应用；
 2. 打开 Gradio 页面；
@@ -419,16 +419,166 @@ GET /api/export.csv
 
 ## 当前状态
 
-项目处于第一版 Demo 开发阶段。
+项目处于 v0.3 演示原型加固阶段，后续将继续升级到 v0.4。
 
-当前重点不是部署正式系统，也不是训练新模型，而是先搭建一个可运行、可演示、可扩展的事实核查 Agent 原型。
+当前重点不是部署正式系统，也不是训练新模型，而是保持一个可运行、可演示、可扩展的 v0.3 事实核查 Agent 原型，并为后续 v0.4 加固预留空间。
 
 ## 后续计划
 
-1. 完成第一版可运行 Demo；
+1. 完成 v0.3 可运行演示原型，并继续升级到 v0.4；
 2. 接入真实 DeepSeek API；
 3. 接入真实 Tavily / Exa / Bing 搜索 API；
 4. 优化新闻事实可靠性评价尺度；
 5. 增加课堂实验数据分析面板；
 6. 支持学生人工反诘与修改记录；
 7. 后续根据 Wisepen 平台接口情况决定是否接入 Wisepen。
+
+## v0.3 演示原型快速开始
+
+### 安装依赖
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 配置 API Key
+
+```bash
+cp .env.example .env
+```
+
+在 `.env` 中按你的实际 API 提供方填写。项目不默认绑定某一个 LLM 服务，`DEEPSEEK_BASE_URL` 和 `DEEPSEEK_MODEL` 需要由用户自行配置：
+
+```env
+DEEPSEEK_API_KEY=你的 LLM API Key
+DEEPSEEK_BASE_URL=你的 OpenAI-compatible Base URL
+DEEPSEEK_MODEL=你的模型名
+TAVILY_API_KEY=你的 Tavily Key  # 真实搜索通过 Authorization: Bearer header 使用
+DEMO_MODE=false
+```
+
+如果使用 Paratera LLM API，可类似：
+
+```env
+DEEPSEEK_API_KEY=你的Key
+DEEPSEEK_BASE_URL=https://llmapi.paratera.com/v1
+DEEPSEEK_MODEL=Qwen3-235B-A22B-Instruct-2507
+TAVILY_API_KEY=你的TavilyKey
+DEMO_MODE=false
+```
+
+如果使用 DeepSeek 官方 API，请根据 DeepSeek 官方文档填写 base URL 和 model。
+
+如果 `DEMO_MODE=true`，或未配置 API Key，系统会自动使用 mock LLM、mock 搜索结果和 mock 网页正文，保证课堂演示可跑通。
+
+### 启动 Gradio Demo
+
+```bash
+python app.py
+```
+
+
+### 真实 API 模式启动流程
+
+```bash
+cd /path/to/chongmingbird-agent
+source .venv/bin/activate
+cp .env.example .env
+# 编辑 .env 填入 DeepSeek 和 Tavily Key，并设置 DEMO_MODE=false
+python app.py
+```
+
+打开 Gradio 页面后，请取消勾选“Demo 模式（无 API Key 也可运行）”，这样 `run_check(text, demo_mode)` 会进入真实 API 模式。若 evidence cards 中仍出现 `example.edu.gov.cn`、`news.example.com`、`factcheck.example.org`，说明当前仍在 Demo/mock 模式；若 source 是 `news.cn`、`gov.cn`、`edu.cn`、主流媒体或其他真实网页，说明 Tavily 真实搜索已经生效。真实联网时 trace 应显示“当前模式：真实 API 模式”、Tavily 搜索成功和 `real source`。
+Demo 模式：`DEMO_MODE=true`，不需要任何 API Key，使用 mock source，示例案例栏可用。真实 API 模式：`DEMO_MODE=false`，需要 LLM API Key 和 Tavily API Key，页面中应取消勾选 Demo 模式，示例案例栏会隐藏，evidence cards 应显示真实 URL。不要把 `.env` 提交到 GitHub，不要截图或公开 API Key，也不要在 README、docs、测试日志中写真实 Key。
+
+
+### 启动 FastAPI
+
+```bash
+uvicorn main:app --reload
+```
+
+API 入口：
+
+* `GET /health`
+* `POST /api/fact-check`
+* `GET /api/sessions`
+* `GET /api/sessions/{session_id}`
+* `POST /api/sessions/{session_id}/human-override`
+* `GET /api/export.csv`
+
+### 运行测试
+
+```bash
+pytest
+```
+
+## 示例输入
+
+```text
+网传某地因为食品安全问题关闭了所有中小学食堂。
+```
+
+## 示例输出摘要
+
+系统会拆解事实主张，生成官方来源、主流媒体、反证、时间线、原始出处等搜索任务，读取网页证据，生成 Evidence Cards，并输出 Markdown 核查报告。报告包含可靠性等级、评分、支持证据、反驳证据、不确定点、source URL 和人工最终裁决区域。
+
+## 当前局限
+
+* Demo 模式使用固定 mock 数据，不能代表真实世界检索结果。
+* 真实联网模式依赖 DeepSeek 与 Tavily API 的可用性、额度和网络状态。
+* 网页正文提取可能受反爬、登录墙、动态渲染页面影响。
+* V1 评分规则是教学用启发式规则，后续应结合更多课堂样本校准权重。
+* 当前 Gradio 实时过程为轻量实现，后续可升级 SSE/WebSocket。
+
+## 下一步升级方向
+
+* 增加可配置 Prompt 模板和多语言检索策略。
+* 增加来源白名单、域名信誉库和事实核查机构数据库。
+* 引入异步并发搜索/网页读取和去重聚类。
+* 为 FastAPI 增加 SSE/WebSocket 流式 trace。
+* 增加课堂标注界面、评分校准工具和更完整的数据导出。
+
+## 自查与验收命令
+
+建议在全新虚拟环境中执行：
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+python app.py
+```
+
+另开终端启动 API：
+
+```bash
+source .venv/bin/activate
+uvicorn main:app --reload
+```
+
+常用验收请求：
+
+```bash
+curl http://127.0.0.1:8000/health
+curl -X POST http://127.0.0.1:8000/api/fact-check \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"网传某地因为食品安全问题关闭了所有中小学食堂。","demo_mode":true}'
+curl http://127.0.0.1:8000/api/sessions
+curl http://127.0.0.1:8000/api/export.csv
+```
+
+运行自动化测试：
+
+```bash
+pytest
+```
+
+如果在受限网络环境中无法访问 PyPI，请在可联网环境中先完成 `pip install -r requirements.txt`；Demo 模式本身不需要 DeepSeek 或 Tavily API Key。
+
+## 人工裁决说明
+
+人工裁决用于课堂实验中记录人类判断与 AI 建议结论之间的差异，不是系统默认值。用户必须主动选择“是否接受 AI 结论”，并主动选择人工最终可靠性等级后才能保存。未提交人工裁决时，系统记录为“未提交人工裁决”，不会默认写入“部分接受 / 存疑”。
